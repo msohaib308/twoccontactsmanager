@@ -16,6 +16,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: '2C Contacts',
       theme: ThemeData(
         brightness: Brightness.light,
         primaryColor: Colors.purple[800],

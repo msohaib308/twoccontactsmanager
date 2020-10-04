@@ -23,9 +23,15 @@ class _HomePageState extends State<HomePage> {
     final PermissionStatus permissionStatus = await _getPermission();
     if (permissionStatus == PermissionStatus.granted) {
       //We can now access our contacts here
-      List<Contact> contacts =
+      List<Contact> tempContacts =
           (await ContactsService.getContacts(withThumbnails: false)).toList();
-
+      List<Contact> contacts = [];
+      for (var i = 0; i < tempContacts.length; i++) {
+        var cContact = tempContacts[i];
+        if (cContact.phones.isNotEmpty) {
+          contacts.add(cContact);
+        }
+      }
       // debugPrint(contacts[0].displayName);
       setState(() {
         contactList = contacts;
@@ -81,7 +87,7 @@ class _HomePageState extends State<HomePage> {
           // ),
           actions: <Widget>[
             IconButton(
-              icon: Icon(Icons.create),
+              icon: Icon(Icons.add_circle_outline),
               onPressed: createCOntact,
             )
           ]),
@@ -131,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                         children: <Widget>[
                           IconButton(
                             icon: Icon(
-                              Icons.call,
+                              Icons.message,
                               color: Colors.green,
                               size: 30,
                             ),
@@ -140,18 +146,22 @@ class _HomePageState extends State<HomePage> {
                               // _launchURL();
                               launchWhatsApp(
                                   contact: contact,
-                                  message: 'Allah is the best planner',
+                                  message: '',
                                   context: context);
                             },
                           ), // icon-1
-                          IconButton(
-                            icon: Icon(
-                              Icons.message,
-                              color: Colors.orange,
-                              size: 30,
-                            ),
-                            onPressed: () {},
-                          ), // icon-1
+                          // IconButton(
+                          //   icon: Icon(
+                          //     Icons.call,
+                          //     color: Colors.orange,
+                          //     size: 30,
+                          //   ),
+                          //   onPressed: () {
+                          //     var phone =
+                          //         contact.phones.toList()[0].value.toString();
+                          //     launch("tel://$phone");
+                          //   },
+                          // ), // icon-1
                         ],
                       ),
                       onTap: () {},
@@ -192,13 +202,15 @@ class _HomePageState extends State<HomePage> {
     @required String message,
     @required BuildContext context,
   }) async {
-    // var phone = '';
-    // var phone = contact.phones.toString();
+    var phone = contact.phones.toList()[0].value.toString();
+    // if (phone.startsWith('0')) {
+    //   phone = phone.replaceFirst('0', '+');
+    // }
     String myUrl = '';
     if (Platform.isIOS) {
-      myUrl = "whatsapp://wa.me/+923473027259/?text=${Uri.parse(message)}";
+      myUrl = "whatsapp://wa.me/$phone/?text=${Uri.parse(message)}";
     } else {
-      myUrl = "whatsapp://send?phone=+923473027259&text=${Uri.parse(message)}";
+      myUrl = "whatsapp://send?phone=$phone&text=${Uri.parse(message)}";
     }
 
     if (await canLaunch(myUrl)) {
@@ -220,12 +232,32 @@ class _HomePageState extends State<HomePage> {
         elevation: 6.0,
       ));
     }
+
+    // Intent sendIntent = new Intent();
+    // sendIntent.setAction(Intent.ACTION_VIEW);
+    // String url = "https://api.whatsapp.com/send?phone=" + number + "&text=" + path;
+    // sendIntent.setData(Uri.parse(url));
+    // activity.startActivity(sendIntent);
+
+    // Intent i = new Intent(Intent.ACTION_SENDTO, Uri.parse("content://com.android.contacts/data/" + c.getString(0)));
+    // i.setType("text/plain");
+    // i.setPackage("com.whatsapp");           // so that only Whatsapp reacts and not the chooser
+    // i.putExtra(Intent.EXTRA_SUBJECT, "Subject");
+    // i.putExtra(Intent.EXTRA_TEXT, "I'm the body.");
+    // startActivity(i);
   }
 
   void filterContacts(String query) async {
-    List<Contact> contacts =
+    List<Contact> tempContacts =
         (await ContactsService.getContacts(query: query, withThumbnails: false))
             .toList();
+    List<Contact> contacts = [];
+    for (var i = 0; i < tempContacts.length; i++) {
+      var cContact = tempContacts[i];
+      if (cContact.phones.isNotEmpty) {
+        contacts.add(cContact);
+      }
+    }
     // debugPrint(contacts[0].displayName);
     setState(() {
       contactList = contacts;

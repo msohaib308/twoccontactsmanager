@@ -1,4 +1,4 @@
-package com.example.twoccontactsmanager
+package com.example.TwoCContacts
 
 import io.flutter.embedding.android.FlutterActivity
 

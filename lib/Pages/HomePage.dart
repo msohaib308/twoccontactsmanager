@@ -136,77 +136,23 @@ class _HomePageState extends State<HomePage> {
                     ? Center(
                         child: CircularProgressIndicator(),
                       )
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: contactList.length,
-                        itemBuilder: (context, index) {
-                          Contact contact = contactList[index];
-                          return Column(
-                            children: [
-                              ListTile(
-                                leading: (contact.avatar != null &&
-                                        contact.avatar.isNotEmpty)
-                                    ? CircleAvatar(
-                                        backgroundImage:
-                                            MemoryImage(contact.avatar),
-                                      )
-                                    : CircleAvatar(
-                                        child: Text(contact.displayName
-                                            .substring(0, 1)),
-                                        backgroundColor:
-                                            Theme.of(context).accentColor,
-                                      ),
-                                title: Text(contact.displayName ?? ''),
-                                subtitle: Text(contact?.phones?.firstWhere(
-                                    (element) => element.value.isNotEmpty,
-                                    orElse: () {
-                                  return Item(value: '');
-                                })?.value),
-                                // trailing: Text('6:45 pm'),
-                                trailing: Wrap(
-                                  spacing: 10, // space between two icons
-                                  children: <Widget>[
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.message,
-                                        color: Colors.green,
-                                        size: 30,
-                                      ),
-                                      onPressed: () {
-                                        // var sds = index;
-                                        // _launchURL();
-                                        launchWhatsApp(
-                                            contact: contact,
-                                            message: '',
-                                            context: context);
-                                      },
-                                    ), // icon-1
-                                    // IconButton(
-                                    //   icon: Icon(
-                                    //     Icons.call,
-                                    //     color: Colors.orange,
-                                    //     size: 30,
-                                    //   ),
-                                    //   onPressed: () {
-                                    //     var phone =
-                                    //         contact.phones.toList()[0].value.toString();
-                                    //     launch("tel://$phone");
-                                    //   },
-                                    // ), // icon-1
-                                  ],
-                                ),
-                                onTap: () {},
-                                // contentPadding: EdgeInsets.symmetric(
-                                //     // horizontal: 20,
-                                //     // vertical: 20,
-                                //     ),
-                              ),
-                              Divider(
-                                height: 0,
-                              )
-                            ],
-                          );
-                        },
+                    : Scrollbar(
+                        child: ListView(
+                          children: contactList
+                              .map((cont) => _contactTile(cont))
+                              .toList(),
+                        ),
+                        // child: ListView.separated(
+                        //   shrinkWrap: true,
+                        //   itemCount: contactList.length,
+                        //   separatorBuilder: (context, index) => Divider(
+                        //     color: Colors.black,
+                        //   ),
+                        //   itemBuilder: (context, index) {
+                        //     Contact contact = contactList[index];
+
+                        //   },
+                        // ),
                       ))
           ],
         ),
@@ -301,5 +247,66 @@ class _HomePageState extends State<HomePage> {
       contactList = contactsArr;
       // this.isLoading = false;
     });
+  }
+
+  Widget _contactTile(Contact contact) {
+    return Column(
+      children: [
+        ListTile(
+          leading: (contact.avatar != null && contact.avatar.isNotEmpty)
+              ? CircleAvatar(
+                  backgroundImage: MemoryImage(contact.avatar),
+                )
+              : CircleAvatar(
+                  child: Text(contact.displayName.substring(0, 1)),
+                  backgroundColor: Theme.of(context).accentColor,
+                ),
+          title: Text(contact.displayName ?? ''),
+          subtitle: Text(contact?.phones
+              ?.firstWhere((element) => element.value.isNotEmpty, orElse: () {
+            return Item(value: '');
+          })?.value),
+          // trailing: Text('6:45 pm'),
+          trailing: Wrap(
+            spacing: 10, // space between two icons
+            children: <Widget>[
+              IconButton(
+                icon: Icon(
+                  Icons.message,
+                  color: Colors.green,
+                  size: 30,
+                ),
+                onPressed: () {
+                  // var sds = index;
+                  // _launchURL();
+                  launchWhatsApp(
+                      contact: contact, message: '', context: context);
+                },
+              ), // icon-1
+              // IconButton(
+              //   icon: Icon(
+              //     Icons.call,
+              //     color: Colors.orange,
+              //     size: 30,
+              //   ),
+              //   onPressed: () {
+              //     var phone =
+              //         contact.phones.toList()[0].value.toString();
+              //     launch("tel://$phone");
+              //   },
+              // ), // icon-1
+            ],
+          ),
+          onTap: () {},
+          // contentPadding: EdgeInsets.symmetric(
+          //     // horizontal: 20,
+          //     // vertical: 20,
+          //     ),
+        ),
+        Divider(
+          height: 0,
+        )
+      ],
+    );
   }
 }

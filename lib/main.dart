@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'Pages/HomePage.dart';
+import 'Services/HexColor.dart';
 
 void main() {
   runApp(MyApp());
@@ -19,9 +20,10 @@ class _MyAppState extends State<MyApp> {
       title: '2C Contacts',
       theme: ThemeData(
         brightness: Brightness.light,
-        primaryColor: Colors.purple[800],
-        accentColor: Colors.purple[800],
-        // accentColor: Colors.amber,
+        // primaryColor: Colors.purple[800],
+        primaryColor: HexColor('#4eb048'),
+        // accentColor: Colors.purple[800],
+        accentColor: HexColor('#1d3d71'),
       ),
       home: HomePage(),
     );

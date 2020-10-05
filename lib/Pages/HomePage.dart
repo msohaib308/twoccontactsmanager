@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'AppDialogs.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -89,7 +90,13 @@ class _HomePageState extends State<HomePage> {
             IconButton(
               icon: Icon(Icons.add_circle_outline),
               onPressed: createCOntact,
-            )
+            ),
+            IconButton(
+              icon: Icon(Icons.contacts),
+              onPressed: () {
+                AppDialogs.showMyDialog(context);
+              },
+            ),
           ]),
       // body: HomePageWidgets.pageStyle1(),
       body: Container(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:contacts_service/contacts_service.dart';
@@ -14,13 +15,26 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Contact> contactList = [];
+  bool isLoading = true;
+  final _searchQuery = new TextEditingController();
+  Timer _debounce;
   @override
   void initState() {
     super.initState();
+    _searchQuery.addListener(_onSearchChanged);
     getAllContacts();
   }
 
+  @override
+  void dispose() {
+    _searchQuery.removeListener(_onSearchChanged);
+    _searchQuery.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
   getAllContacts() async {
+    print('hy app');
     final PermissionStatus permissionStatus = await _getPermission();
     if (permissionStatus == PermissionStatus.granted) {
       //We can now access our contacts here
@@ -36,6 +50,7 @@ class _HomePageState extends State<HomePage> {
       // debugPrint(contacts[0].displayName);
       setState(() {
         contactList = contacts;
+        isLoading = false;
       });
 
       // Lazy load thumbnails after rendering initial contacts.
@@ -105,6 +120,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: EdgeInsets.all(8),
               child: TextField(
+                controller: _searchQuery,
                 decoration: InputDecoration(
                   labelText: 'Search',
                   hintText: 'search...',
@@ -112,78 +128,86 @@ class _HomePageState extends State<HomePage> {
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(8))),
                 ),
-                onChanged: filterContacts,
+                // onChanged: filterContacts,
               ),
             ),
             Expanded(
-                child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: contactList.length,
-              itemBuilder: (context, index) {
-                Contact contact = contactList[index];
-                return Column(
-                  children: [
-                    ListTile(
-                      leading: (contact.avatar != null &&
-                              contact.avatar.isNotEmpty)
-                          ? CircleAvatar(
-                              backgroundImage: MemoryImage(contact.avatar),
-                            )
-                          : CircleAvatar(
-                              child: Text(contact.initials().toString()),
-                              backgroundColor: Theme.of(context).accentColor,
-                            ),
-                      title: Text(contact.displayName ?? ''),
-                      subtitle: Text(contact?.phones?.firstWhere(
-                          (element) => element.value.isNotEmpty, orElse: () {
-                        return Item(value: '');
-                      })?.value),
-                      // trailing: Text('6:45 pm'),
-                      trailing: Wrap(
-                        spacing: 10, // space between two icons
-                        children: <Widget>[
-                          IconButton(
-                            icon: Icon(
-                              Icons.message,
-                              color: Colors.green,
-                              size: 30,
-                            ),
-                            onPressed: () {
-                              // var sds = index;
-                              // _launchURL();
-                              launchWhatsApp(
-                                  contact: contact,
-                                  message: '',
-                                  context: context);
-                            },
-                          ), // icon-1
-                          // IconButton(
-                          //   icon: Icon(
-                          //     Icons.call,
-                          //     color: Colors.orange,
-                          //     size: 30,
-                          //   ),
-                          //   onPressed: () {
-                          //     var phone =
-                          //         contact.phones.toList()[0].value.toString();
-                          //     launch("tel://$phone");
-                          //   },
-                          // ), // icon-1
-                        ],
-                      ),
-                      onTap: () {},
-                      // contentPadding: EdgeInsets.symmetric(
-                      //     // horizontal: 20,
-                      //     // vertical: 20,
-                      //     ),
-                    ),
-                    Divider(
-                      height: 0,
-                    )
-                  ],
-                );
-              },
-            ))
+                child: isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: contactList.length,
+                        itemBuilder: (context, index) {
+                          Contact contact = contactList[index];
+                          return Column(
+                            children: [
+                              ListTile(
+                                leading: (contact.avatar != null &&
+                                        contact.avatar.isNotEmpty)
+                                    ? CircleAvatar(
+                                        backgroundImage:
+                                            MemoryImage(contact.avatar),
+                                      )
+                                    : CircleAvatar(
+                                        child: Text(contact.displayName
+                                            .substring(0, 1)),
+                                        backgroundColor:
+                                            Theme.of(context).accentColor,
+                                      ),
+                                title: Text(contact.displayName ?? ''),
+                                subtitle: Text(contact?.phones?.firstWhere(
+                                    (element) => element.value.isNotEmpty,
+                                    orElse: () {
+                                  return Item(value: '');
+                                })?.value),
+                                // trailing: Text('6:45 pm'),
+                                trailing: Wrap(
+                                  spacing: 10, // space between two icons
+                                  children: <Widget>[
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.message,
+                                        color: Colors.green,
+                                        size: 30,
+                                      ),
+                                      onPressed: () {
+                                        // var sds = index;
+                                        // _launchURL();
+                                        launchWhatsApp(
+                                            contact: contact,
+                                            message: '',
+                                            context: context);
+                                      },
+                                    ), // icon-1
+                                    // IconButton(
+                                    //   icon: Icon(
+                                    //     Icons.call,
+                                    //     color: Colors.orange,
+                                    //     size: 30,
+                                    //   ),
+                                    //   onPressed: () {
+                                    //     var phone =
+                                    //         contact.phones.toList()[0].value.toString();
+                                    //     launch("tel://$phone");
+                                    //   },
+                                    // ), // icon-1
+                                  ],
+                                ),
+                                onTap: () {},
+                                // contentPadding: EdgeInsets.symmetric(
+                                //     // horizontal: 20,
+                                //     // vertical: 20,
+                                //     ),
+                              ),
+                              Divider(
+                                height: 0,
+                              )
+                            ],
+                          );
+                        },
+                      ))
           ],
         ),
       ),
@@ -198,6 +222,13 @@ class _HomePageState extends State<HomePage> {
   //     throw 'Could not launch $url';
   //   }
   // }
+  _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      // do something with _searchQuery.text
+      filterContacts(_searchQuery.text);
+    });
+  }
 
   void createCOntact() async {
     await ContactsService.openContactForm();
@@ -255,19 +286,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   void filterContacts(String query) async {
+    // if (!isLoading) {
+    //   setState(() {
+    //     this.isLoading = true;
+    //   });
+    // }
     List<Contact> tempContacts =
         (await ContactsService.getContacts(query: query, withThumbnails: false))
             .toList();
-    List<Contact> contacts = [];
-    for (var i = 0; i < tempContacts.length; i++) {
-      var cContact = tempContacts[i];
-      if (cContact.phones.isNotEmpty) {
-        contacts.add(cContact);
-      }
-    }
-    // debugPrint(contacts[0].displayName);
+    var contactsArr =
+        tempContacts.where((element) => element.phones.isNotEmpty).toList();
+    // debugPrint(contactsArr[0].displayName);
     setState(() {
-      contactList = contacts;
+      contactList = contactsArr;
+      // this.isLoading = false;
     });
   }
 }

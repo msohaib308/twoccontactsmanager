@@ -1,0 +1,7 @@
+
+keytool -genkey -v -keystore TwoC-key.keystore -alias TwoCHealth -keyalg RSA -keysize 2048 -validity 10000 // only first time
+
+jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore E:\Projects\2cHealthApp\TwoC-key.keystore E:\Projects\2cHealthApp\platforms\android\app\build\outputs\apk\release\app-release-unsigned.apk TwoCHealth
+zipalign -v 4 E:\Projects\2cHealthApp\platforms\android\app\build\outputs\apk\release\app-release-unsigned.apk E:\Projects\2cHealthApp\platforms\android\app\build\outputs\apk\release\TwoCHealthApp.apk
+
+com.2cHealth /// Ios Build Id

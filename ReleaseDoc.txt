@@ -1,7 +1,33 @@
 
-keytool -genkey -v -keystore TwoC-key.keystore -alias TwoCHealth -keyalg RSA -keysize 2048 -validity 10000 // only first time
+keytool -genkey -v -keystore TwoCOntects-key.keystore -alias TwoCCOntacts -keyalg RSA -keysize 2048 -validity 10000 // only first time
+// Password: sohaib308 // save password
 
-jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore E:\Projects\2cHealthApp\TwoC-key.keystore E:\Projects\2cHealthApp\platforms\android\app\build\outputs\apk\release\app-release-unsigned.apk TwoCHealth
-zipalign -v 4 E:\Projects\2cHealthApp\platforms\android\app\build\outputs\apk\release\app-release-unsigned.apk E:\Projects\2cHealthApp\platforms\android\app\build\outputs\apk\release\TwoCHealthApp.apk
+2 : create file in android folder name <key.properties>
+    storePassword=<password from previous step>
+    keyPassword=<password from previous step>
+    keyAlias=key
+    storeFile=<location of the key store file, such as /Users/<user name>/key.jks> // like D:/Projects/twoccontactsmanager/TwoCOntects-key.keystore
 
-com.2cHealth /// Ios Build Id
+3: Paste below code in android/app/build.gradle 
+    def keystoreProperties = new Properties()
+   def keystorePropertiesFile = rootProject.file('key.properties')
+   if (keystorePropertiesFile.exists()) {
+       keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+   }
+
+   android {
+         ...
+   }
+
+4: Add below code in android/app/build.gradle befor buildTypes it will auto fill props from key.properties
+    signingConfigs {
+       release {
+           keyAlias keystoreProperties['keyAlias']
+           keyPassword keystoreProperties['keyPassword']
+           storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+           storePassword keystoreProperties['storePassword']
+       }
+   }
+
+
+   

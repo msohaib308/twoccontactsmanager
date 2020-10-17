@@ -8,6 +8,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'AppDialogs.dart';
 
+import 'package:intent/intent.dart' as android_intent;
+import 'package:intent/action.dart' as android_action;
+
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -283,6 +286,16 @@ class _HomePageState extends State<HomePage> {
                       contact: contact, message: '', context: context);
                 },
               ), // icon-1
+              IconButton(
+                icon: Icon(
+                  Icons.call,
+                  color: Colors.orange,
+                  size: 30,
+                ),
+                onPressed: () {
+                  openWhatsAppCall(contact);
+                },
+              ), // icon-1
               // IconButton(
               //   icon: Icon(
               //     Icons.call,
@@ -308,5 +321,29 @@ class _HomePageState extends State<HomePage> {
         )
       ],
     );
+  }
+
+  void openWhatsAppCall(Contact contact) {
+    // String data = "content://com.android.contacts/data/" + dataId;
+    // String type = "vnd.android.cursor.item/vnd.com.whatsapp.profile";
+    // Intent sendIntent = new Intent();
+    // sendIntent.setAction(Intent.ACTION_VIEW);
+    // sendIntent.setDataAndType(Uri.parse(data), type);
+    // sendIntent.setPackage("com.whatsapp");
+    // startActivity(sendIntent);
+    print('Started');
+    var phone = contact.phones.toList()[0];
+    print(phone.hashCode);
+    var intent = android_intent.Intent();
+    intent.setAction(android_action.Action.ACTION_VIEW);
+    intent.setData(Uri.parse(
+        "content://com.android.contacts/data/" + phone.hashCode.toString()));
+    intent.setType("vnd.android.cursor.item/vnd.com.whatsapp.video.call");
+    intent.setPackage('com.whatsapp');
+    intent.startActivity().catchError((e) => print(e));
+    // android_intent.Intent()
+    // ..setAction(android_action.Action.ACTION_CALL)
+    // ..setData(Uri(scheme: "tel", path: "12345678"))
+    // ..startActivity().catchError((e) => print(e));
   }
 }

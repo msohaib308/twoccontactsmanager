@@ -24,6 +24,7 @@ dependencies:
   permission_handler: ^5.0.0
   contacts_service: ^0.4.6
   url_launcher: ^5.6.0
+  intent:
   flutter:
     sdk: flutter
     
